@@ -1,27 +1,18 @@
 #!/usr/bin/bash -u
 
-pre_hash=
-pid=
-
 while true; do
   sleep 1
-
-  hash=$(sha1sum main.go)
-
-  if [ "$pre_hash" = "$hash" ]; then
+  modified_time=$(stat -c %Y .)
+  if [ "${last_modified_time:-}" = "$modified_time" ]; then
     continue
   fi
-
-  if [ ! -z "$pid" ]; then
-    pkill -P $pid
+  if [ -v pid ]; then
+    pkill -P "$pid"
   fi
-
-  sha1sum main.go > hash
-  pre_hash=$(cat hash 2> /dev/null)
-
+  last_modified_time=$modified_time
   go fmt
   go run . &
   pid=$!
-  echo "Hot Reload has done. $(date)"
+  echo "Rebuilt at $(date "+%H:%M:%S")"
 done
 
