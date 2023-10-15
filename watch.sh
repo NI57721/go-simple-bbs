@@ -1,19 +1,19 @@
 #!/usr/bin/bash -u
 
 pre_hash=
+pid=
 
 while true; do
   sleep 1
 
   hash=$(sha1sum main.go)
-  pid=$(ps aux | grep -v grep | grep go-simple-bbs | awk '{print $2}')
 
   if [ "$pre_hash" = "$hash" ]; then
     continue
   fi
 
   if [ ! -z "$pid" ]; then
-    kill -9 $pid
+    pkill -P $pid
   fi
 
   sha1sum main.go > hash
@@ -21,6 +21,7 @@ while true; do
 
   go fmt
   go run . &
+  pid=$!
   echo "Hot Reload has done. $(date)"
 done
 
